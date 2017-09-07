@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html  lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title><%=title%></title>
+  </head>
+  <body>
+    <h1>main page </h1>
+    <div>
+      <p><%=variable%></p>
+
+      I could insert a variable using <a href="http://handlebarsjs.com/">handlebars</a>
+      instead of <a href="http://ejs.co/">ejs</a>, and then I would have to use double braces {{}} inside the html file. <br>
+      {{ variable }}
+    </div>
+
+    <br><br>
+
+    <div class="liens" name="liens">
+      <% for(var i=0; i<liens.length; i++) {  %>
+       <script>console.info('test <%= i %> = <%= liens[i] %>');</script>
+        <li>
+            <a href='/public/<%= liens[i] %>'>
+                <%= liens[i] %>
+            </a><br>
+            <img src="/public/<%= liens[i] %>" alt="/public/<%=liens[i] %>" style="width : 100px;
+height: auto;">
+        </li><br><br>
+    <% } %>
+    </div>
+  </body>
+</html>

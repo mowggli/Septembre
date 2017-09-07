@@ -1,0 +1,16 @@
+{
+  "name": "exercises",
+  "version": "0.0.1",
+  "description": "Doing stuff with Mathilde",
+  "repository": "https://github.com/alxbrg/exercises",
+  "scripts": {
+    "start": "NODE_ENV=dev node server.js"
+  },
+  "author": "Alexandre Borrego",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.4",
+    "file-exists": "^4.0.0",
+    "request": "^2.81.0"
+  }
+}
