@@ -1,3 +1,7 @@
+// instead of npm start lancer avec DEBUG=express:* node server.js ou  DEBUG=express:router node server.js
+// ou node debug server.js cf http://www.tutorialsteacher.com/nodejs/debug-nodejs-application
+// ou node --inspect server.js
+
 const express = require('express');
 const fileExists = require('file-exists');
 const fs = require('fs');// <-- module.exports/require
@@ -23,7 +27,7 @@ app.get('/*', (req, res, next) => {
   if (req.url=="/error") {
     var err = new Error(reqnum +". Cannot get /error.");
     err.status =500;
-    throw err;
+    next(err);
   } else if (req.url=="/") {
     res.statusMessage=reqnum +". GET OK";
     var variable='les choses changent...';
@@ -91,17 +95,16 @@ app.use(function(req, res, next){
 });
 
 /* Handling errors */
-app.use(function(err, req, res, next) {
+app.use(errorHandler);
+
+function errorHandler (err, req, res, next) {
   if (process.env.NODE_ENV == 'dev') {
     console.log('E'+err.message);
   }
-  err.status=err.status||404;
-  res.status(err.status||404).send(err.message);
-  //res.status(err.status).render('error',{title:err.status+' error',statusCode:err.status,statusMessage:err.message});
-});
+  //res.status(err.status||404).send(err.message);
+  res.status(err.status||404).render('error',{title:err.status+' error',statusCode:err.status,statusMessage:err.message, stack:err.stack.substr(0,100) });
+}
 
 app.listen(port, () => {
-console.log("(using https:\/\/github.com/alexei/sprintf.js to log)");
   console.log(sprintf('The %2$s is %3$s on %1$s %4$d.\n', 'port', 'server', 'listening',port));
-  //console.log("Server listening on port ${port}"); //marche pas dans ce fichier
 });

@@ -1,0 +1,8 @@
+
+> exercises@0.0.1 start /home/mathilde/Dropbox/WEBSITE/TheLocalClone/CodingWithAlex
+> NODE_ENV=dev node server.js
+
+(using https://github.com/alexei/sprintf.js to log)
+The server is listening on port 4000.
+
+ 1. Received a GET request on /
