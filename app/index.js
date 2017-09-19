@@ -12,14 +12,29 @@ const port = 4000;
 const __parentdirname = __dirname.substring(0, __dirname.lastIndexOf('/'));
 var reqnum=0;
 var errnum=0;
-/* serves GET requests from url's '/filename' tq /public/filename existe */
-/* /!\ won't log anything */
-//app.use(express.static('public'));
-
 app.set('views', __parentdirname + '/Vues');
 app.set('view engine', 'ejs');
+const CB = require('./callbacks.js');
+const mongo = require('mongodb');
+const mongoose = require('mongoose'); // import mongoose from 'mongoose';
+//const uri = 'mongodb://localhost:27017/test'; //'mongodb://localhost/test'
+const uri = 'mongodb://mowggli:troWS9ben@ds137464.mlab.com:37464/base_de_donnees_test'
+const assert = require('assert');
+const Scientist = require('../models/scientist');
+mongoose.Promise = global.Promise; // Use native promises (mpromise?)
 
-/* serves get requests */
+/******************************************************************************/
+mongoose.connect(uri, CB.mongoose_connect);
+var db = mongoose.connection;
+db.on('error', (err) => {
+  var err = new Error(reqnum +'. Error connecting to the database.');
+  err.status =500;
+  next(err);
+});
+/******************************************************************************/
+
+
+// serves get requests
 app.get('/*', (req, res, next) => {
   reqnum++;
   var statuscode =200;
@@ -52,7 +67,7 @@ app.get('/*', (req, res, next) => {
   }
 });
 
-/* Serves post requests on /api */
+// Serves post requests on /api */
 app.post('/api', function(req, res, next){
   reqnum++;
   console.log(" "+reqnum +". Received a POST request on "+req.url);
@@ -64,8 +79,8 @@ app.post('/api', function(req, res, next){
   req.on('end', ()  => {
     if (body != '') {
       var obj = JSON.parse(body);
-      if (typeof obj.arg == "number") {
-        var str = obj.arg.toString();
+      if (typeof obj.arg == "string") {
+        /*var str = obj.arg.toString();
         //write in file :
         var filename = __parentdirname + "/POSTrequestanswers.json";
         fs.appendFile(filename,  str + "\n", (err) => {
@@ -73,9 +88,19 @@ app.post('/api', function(req, res, next){
             // à tester parce que je ne sais pas où irais cette erreur
             return console.log(err+'oops');
           }
+        });*/
+        /******************************************************************************/
+        // Find  scientists in list with that last name
+        Scientist.findOne({'name.last':obj.arg}).select('name -_id discipline dates living age').exec(function(err, doc) {
+          if (err||doc==null) {
+            var answer = reqnum +'. Did not find a scientist with the name \''+obj.arg+'\' in the database.';
+          } else {
+            var answer = reqnum +'. Found this scientist in the database: '+ doc.fullName + ' ('+doc.dates.birth+'-'+doc.dates.death+') age = '+doc.age+' (alive = '+doc.living+') discpline = '+doc.discipline;
+          }
+          res.statusMessage=reqnum +". POST OK.";
+          res.send(answer);
         });
-        res.statusMessage=reqnum +". POST OK.";
-        res.send(reqnum +'. Argument is '+str+'.');
+        /******************************************************************************/
       } else {
         var err = new Error(reqnum +'. Cannot POST. Type of argument is '+typeof obj.arg+'.');
         err.status =500;
@@ -94,7 +119,18 @@ app.use(function(req, res, next){
   next(err);   //ou  throw err;
 });
 
-/* Handling errors */
+// Where do I close the connection??
+//http://theholmesoffice.com/mongoose-connection-best-practice/
+/*// If the Node process ends, close the Mongoose connection
+process.on('SIGINT', function() {
+  mongoose.connection.close(function () {
+    console.log('Mongoose default connection disconnected through app termination'); //console.log('closed connection');
+    process.exit(0);
+  });
+});
+*/
+
+// Handles errors
 app.use(errorHandler);
 
 function errorHandler (err, req, res, next) {
@@ -105,6 +141,7 @@ function errorHandler (err, req, res, next) {
   res.status(err.status||404).render('error',{title:err.status+' error',statusCode:err.status,statusMessage:err.message, stack:err.stack.substr(0,100) });
 }
 
+// Listens
 app.listen(port, () => {
   console.log(sprintf('The %2$s is %3$s on %1$s %4$d.\n', 'port', 'server', 'listening',port));
 });
